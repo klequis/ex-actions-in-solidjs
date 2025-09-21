@@ -107,7 +107,7 @@ export default function Home() {
   });
 
   return (
-    <section class="bg-gray-100 text-gray-700 p-8">
+    <section>
       <ErrorBoundary fallback={<h1>ERROR</h1>}>
         <h1>Throw All Errors</h1>
         <Suspense fallback={<h1>Loading...</h1>}>

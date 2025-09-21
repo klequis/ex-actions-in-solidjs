@@ -1,6 +1,6 @@
 /* @refresh reload */
 import 'solid-devtools';
-// import './index.css';
+import './index.css';
 
 import { render } from 'solid-js/web';
 

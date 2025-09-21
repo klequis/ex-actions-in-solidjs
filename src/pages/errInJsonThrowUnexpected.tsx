@@ -106,7 +106,7 @@ export default function Home() {
   return (
     <section class="bg-gray-100 text-gray-700 p-8">
       <ErrorBoundary fallback={<h1>ERROR</h1>}>
-        <h1>Return Error in Json or Throw Unexpected</h1>
+        <h1>Error in Json, Throw Unexpected</h1>
         <Suspense fallback={<h1>Loading...</h1>}>
           <Show when={users()}>
             <For each={users()}>{(u: User) => <DisplayUser user={u} />}</For>
