@@ -1,8 +1,8 @@
 /* @refresh reload */
 import 'solid-devtools';
-import './index.css';
+// import './index.css';
 
-import { render, Suspense } from 'solid-js/web';
+import { render } from 'solid-js/web';
 
 import App from './app';
 import { Router } from '@solidjs/router';
