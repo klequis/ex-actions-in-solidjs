@@ -14,7 +14,7 @@ export const routes: RouteDefinition[] = [
   },
   {
     path: "/errInJsonThrowUnexpected",
-    component: lazy(() => import('./pages/errInJsonThrowUnexpected'))
+    component: lazy(() => import('./pages/hold/errInJsonThrowUnexpected'))
   },
   {
     path: '**',

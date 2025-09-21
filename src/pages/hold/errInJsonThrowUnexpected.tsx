@@ -14,7 +14,9 @@ import {
   query,
   useSubmission,
 } from "@solidjs/router";
-import { wait } from "../wait";
+import { wait } from "../../wait";
+import { TypeOfResult } from "../../typeOfResult";
+import { TypeOfError } from "../../typeOfError";
 // import { isServer } from "solid-js/web";
 const log = console.log;
 
@@ -104,9 +106,14 @@ export default function Home() {
   });
 
   return (
-    <section class="bg-gray-100 text-gray-700 p-8">
+    <section>
       <ErrorBoundary fallback={<h1>ERROR</h1>}>
         <h1>Error in Json, Throw Unexpected</h1>
+        <p>
+          In the action's <code>try</code>, expected errors are returned as <code>json(new
+          Error("..."))</code>.
+        </p>
+        <p>Unexpected errors are thrown from the catch.</p>
         <Suspense fallback={<h1>Loading...</h1>}>
           <Show when={users()}>
             <For each={users()}>{(u: User) => <DisplayUser user={u} />}</For>
@@ -116,38 +123,15 @@ export default function Home() {
           <Show when={sub.pending}>
             <p>Pending</p>
           </Show>
-          <Show when={sub.result}>{(error) => <p>{error().message}</p>}</Show>
           <Show when={!sub.pending}>
             <Switch>
               <Match when={sub.result}>
                 <h2>Result</h2>
-                <ul>
-                  {/* <li>
-                    <code>sub.result.name</code> returns: {sub.result?.name}
-                  </li>
-                  <li>
-                    <code>sub.result</code> returns: {sub.result.error.message}
-                  </li> */}
-                  <li>
-                    <code>stringErrorUser()</code> returns:{" "}
-                    {stringErrorUser(sub.result)}
-                  </li>
-                </ul>
+                <TypeOfResult r={sub.result} />
               </Match>
               <Match when={sub.error}>
-                <ul>
-                  <li>
-                    <code>
-                      sub.error instanceof Error ? sub.error.message : sub.error
-                    </code>{" "}
-                    returns:{" "}
-                    {sub.error instanceof Error ? sub.error.message : sub.error}
-                  </li>
-                  <li>
-                    <code>stringErrorUser()</code> returns:{" "}
-                    {stringErrorUser(sub.error)}
-                  </li>
-                </ul>
+                <h2>Error</h2>
+                <TypeOfError e={sub.error} />
               </Match>
             </Switch>
           </Show>
