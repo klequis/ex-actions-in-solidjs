@@ -33,13 +33,7 @@ const users: User[] = [
 
 const getUsers = query((id?: number): Promise<User | User[] | null> => {
   return new Promise((resolve, reject) => {
-    // const user = id ? users[id] : users;
     const user = id ? users[id] || null : users;
-    // log('getUser-------')
-    // log('id', id)
-    // log('user', user)
-    // log("typeof user", typeof user)
-    // log('--------------')
     console.log("user**", user ? "true" : "false");
     return setTimeout(() => {
       if (user) {
@@ -55,14 +49,15 @@ const isAdmin = action(async (formData: FormData) => {
   try {
     await wait();
     const id = formData.get("userid");
-    log("id", id === "undefined");
     if (id === "undefined") {
+      // the word "undefined" is in the input so it
+      // will literally have the string "underfined".
       throw new Error("Missing param 'id'");
     }
-    // If the user is not found this will throw 'User not found
     const user = (await getUsers(Number(id))) as User;
+    log('isAdmin user:', user)
+    if (!user) throw json(new Error("User not found."))
     if (!user?.admin) throw new Error("User is not admin");
-    // return json({ success: true, data: user }, { revalidate: "none" });
     return user;
   } catch (e) {
     log("e", e);

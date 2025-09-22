@@ -14,9 +14,9 @@ import {
   query,
   useSubmission,
 } from "@solidjs/router";
-import { wait } from "../../wait";
-import { TypeOfResult } from "../../typeOfResult";
-import { TypeOfError } from "../../typeOfError";
+import { wait } from "../wait";
+import { TypeOfResult } from "../typeOfResult";
+import { TypeOfError } from "../typeOfError";
 // import { isServer } from "solid-js/web";
 const log = console.log;
 
@@ -33,13 +33,7 @@ const users: User[] = [
 
 const getUsers = query((id?: number): Promise<User | User[] | null> => {
   return new Promise((resolve, reject) => {
-    // const user = id ? users[id] : users;
-    const user = id ? users[id] || null : users;
-    // log('getUser-------')
-    // log('id', id)
-    // log('user', user)
-    // log("typeof user", typeof user)
-    // log('--------------')
+    const user = (id ? users[id] || null : users)
     console.log("user**", user ? "true" : "false");
     return setTimeout(() => {
       if (user) {
@@ -59,7 +53,7 @@ const isAdmin = action(async (formData: FormData) => {
       return json(new Error("Missing param 'id'"));
     }
     const user = (await getUsers(Number(id))) as User;
-    if (!user?.admin) throw json(new Error("User is not admin"));
+    if (!user?.admin) return json(new Error("User is not admin"));
     return user;
   } catch (e) {
     log("e", e);
@@ -67,23 +61,6 @@ const isAdmin = action(async (formData: FormData) => {
     throw new Error(msg);
   }
 });
-
-function stringErrorUser(errOrResult: string | Error | User) {
-  if (typeof errOrResult === "string") {
-    console.log("string: ", errOrResult);
-    return errOrResult;
-  }
-  if (errOrResult instanceof Error) {
-    console.log("error.message", errOrResult.message);
-    return errOrResult.message;
-  }
-  console.log("userid is:", errOrResult.id);
-  return (
-    <>
-      id: {errOrResult.id}, name: {errOrResult.name}
-    </>
-  );
-}
 
 export default function Home() {
   const users = createAsync(async () => {
