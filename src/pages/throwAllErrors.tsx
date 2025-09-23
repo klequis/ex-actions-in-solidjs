@@ -10,7 +10,6 @@ import {
 import {
   action,
   createAsync,
-  json,
   query,
   useSubmission,
 } from "@solidjs/router";
@@ -18,7 +17,7 @@ import { wait } from "../wait";
 import { TypeOfResult } from "../typeOfResult";
 import { TypeOfError } from "../typeOfError";
 import { getTime } from "../getTime";
-// import { isServer } from "solid-js/web";
+
 const log = console.log;
 
 type User = {
@@ -53,18 +52,14 @@ const getUsers = query((id?: number) => {
 const isAdmin = action(async (formData: FormData) => {
   try {
     const id = formData.get("userid");
-    log('id', id)
     if (!id) {
       throw new Error("Missing param 'id'");
     }
     const user = (await getUsers(Number(id))) as User;
-    log('user', user)
     if (!user) throw new Error("User not found.");
-    log('user.admin', user?.admin)
     if (!user?.admin) throw new Error("User is not admin.");
     return user;
   } catch (e) {
-    // log("e", e);
     const msg = e instanceof Error ? e.message : "unknown error";
     throw new Error(msg);
   }
@@ -72,11 +67,7 @@ const isAdmin = action(async (formData: FormData) => {
 
 export default function Home() {
   const users = createAsync(async () => {
-    //TODO: do you need a separate return here?
-    //     !not tested yet
     return (await getUsers()) as User[];
-    // const a: User[] = (await getUsers()) as User[];
-    // return a;
   });
   const sub = useSubmission(isAdmin);
 
@@ -113,7 +104,7 @@ export default function Home() {
 
   createEffect(() => {
     if (users() && !sub.pending) {
-      console.group(getTime("throwAllErrors"))
+      console.group(getTime("throwAllErrors"));
       tblResult();
       tblError();
       console.groupEnd();
@@ -127,9 +118,9 @@ export default function Home() {
         <p>All errors in the action are thrown.</p>
         <Suspense fallback={<h1>Loading...</h1>}>
           <Show when={users()}>
-            <For each={users()}>{(u: User) => <DisplayUser user={u} />}</For>
-            <DisplayUser user={{ name: "noID", admin: false }} />
-            <DisplayUser user={{ name: "unknownID", admin: true, id: 9 }} />
+            <For each={addDummyUsers()}>
+              {(u: User) => <DisplayUser user={u} />}
+            </For>
           </Show>
           <Show when={sub.pending}>
             <p>Pending</p>
