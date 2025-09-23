@@ -119,3 +119,20 @@ div.filename:nth-child(2) {
   background-color: #B9CBFE;
   padding: 15px;
 }
+
+.id-input {
+  max-width: 80px;
+  text-align: center;
+}
+
+.name-input {
+  max-width: 100px;
+}
+
+.isAdmin-input {
+  max-width: 100px;
+}
+
+.user-li {
+  display: flex;
+}

@@ -53,15 +53,15 @@ const getUsers = query((id?: number) => {
 const isAdmin = action(async (formData: FormData) => {
   try {
     const id = formData.get("userid");
-    log('id', id)
+    log("id", id);
     if (!id) {
-      throw new Error("Missing param 'id'");
+      return json(new Error("Missing param 'id'"));
     }
     const user = (await getUsers(Number(id))) as User;
-    log('user', user)
-    if (!user) throw new Error("User not found.");
-    log('user.admin', user?.admin)
-    if (!user?.admin) throw new Error("User is not admin.");
+    log("user", user);
+    if (!user) return json(new Error("User not found."));
+    log("user.admin", user?.admin);
+    if (!user?.admin) return json(new Error("User is not admin."));
     return user;
   } catch (e) {
     // log("e", e);
@@ -123,13 +123,17 @@ export default function Home() {
   return (
     <section>
       <ErrorBoundary fallback={<h1>ERROR</h1>}>
-        <h1>Throw All Errors</h1>
-        <p>All errors in the action are thrown.</p>
+        <h1>Error in Json, Throw Unexpected</h1>
+        <p>
+          In the action's <code>try</code>, expected errors are returned as{" "}
+          <code>json(new Error("..."))</code>.
+        </p>
+        <p>Unexpected errors are thrown from the catch.</p>
         <Suspense fallback={<h1>Loading...</h1>}>
           <Show when={users()}>
-            <For each={users()}>{(u: User) => <DisplayUser user={u} />}</For>
-            <DisplayUser user={{ name: "noID", admin: false }} />
-            <DisplayUser user={{ name: "unknownID", admin: true, id: 9 }} />
+            <For each={addDummyUsers()}>
+              {(u: User) => <DisplayUser user={u} />}
+            </For>
           </Show>
           <Show when={sub.pending}>
             <p>Pending</p>
