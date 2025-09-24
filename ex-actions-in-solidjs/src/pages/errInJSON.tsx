@@ -1,7 +1,6 @@
 import {
   createEffect,
   ErrorBoundary,
-  For,
   Match,
   Show,
   Suspense,
@@ -12,38 +11,19 @@ import {
   createAsync,
   json,
   query,
+  Submission,
   useSubmission,
 } from "@solidjs/router";
-import { TypeOfResult } from "../typeOfResult";
-import { TypeOfError } from "../typeOfError";
-import { getTime } from "../getTime";
-import { validateNumber } from "../utils/validateNumber";
-
+import type { User } from "../types";
+import { DisplayUsers } from "../components/displayUsers";
+import { TypeOfResult } from "../components/typeOfResult";
+import { TypeOfError } from "../components/typeOfError";
+import { getTime } from "../lib/getTime";
+import { validateNumber } from "../lib/validateNumber";
+import { db } from "../lib/db";
+import { consoleOutput } from "../lib/consoleOutput";
+// import { isServer } from "solid-js/web";
 const log = console.log;
-
-type User = {
-  id?: number;
-  name: string;
-  admin: boolean;
-};
-
-const users: User[] = [
-  { id: 0, name: "validUser", admin: true },
-  { id: 1, name: "notAdmin", admin: false },
-];
-
-function db(id?: number): Promise<User | User[] | Error> {
-  return new Promise((resolve, reject) => {
-    const user = id ? users[id] : users;
-    return setTimeout(() => {
-      if (user) {
-        resolve(user);
-      } else {
-        reject(new Error("User not found"));
-      }
-    }, 1000);
-  });
-}
 
 const getUsers = query((id?: number) => {
   const user = db(id);
@@ -53,17 +33,21 @@ const getUsers = query((id?: number) => {
 const isAdmin = action(async (formData: FormData) => {
   try {
     const id = Number(formData.get("userid"));
-    // missing id
     if (!validateNumber(id)) {
-      throw new Error("Missing param 'id'");
+      return json(new Error("Missing param 'id'"));
     }
     const user = (await getUsers(Number(id))) as User[];
     log("user", user);
-    if (user.length === 0) return json(new Error("User not found."));
+    
+    // Yes, throw this
+    log('before 10')
+    if (id === 10) throw new Error("ERROR: throw user selected.");
+    log('after 10')
+    if (user.length === 0) return json(new Error(`Unknown ID: ${id}`));
     if (!user[0]?.admin) return json(new Error("User is not admin."));
     return user;
   } catch (e) {
-    log("e", e);
+    // log("e", e);
     const msg = e instanceof Error ? e.message : "unknown error";
     throw new Error(msg);
   }
@@ -75,60 +59,26 @@ export default function Home() {
   });
   const sub = useSubmission(isAdmin);
 
-  const tblResult = () => {
-    const inputs = [
-      ["result", sub.result],
-      ["typeof", typeof sub.result],
-      ["instanceof Error", sub.error instanceof Error ? "true" : "false"],
-    ];
-    console.group("sub.result");
-    console.table(inputs);
-    console.groupEnd();
-  };
-
-  const tblError = () => {
-    const inputs = [
-      ["error", sub.error],
-      ["typeof", typeof sub.error],
-      ["instanceof Error", sub.error instanceof Error ? "true" : "false"],
-    ];
-
-    console.group("sub.error");
-    console.table(inputs);
-    console.groupEnd();
-  };
-
-  const addDummyUsers = () => {
-    const a = [
-      { name: "noID", admin: false },
-      { name: "unknownID", admin: true, id: 9 },
-    ];
-    return [...(users() ?? []), ...a];
-  };
-
   createEffect(() => {
     if (users() && !sub.pending) {
-      console.group(getTime("throwAllErrors"));
-      tblResult();
-      tblError();
+      console.group(getTime("errInJSON"));
+      consoleOutput(sub as Submission<[formData: FormData], User[] | Error>);
       console.groupEnd();
     }
   });
 
   return (
     <section>
-      <ErrorBoundary fallback={<h1>ERROR</h1>}>
+      <ErrorBoundary fallback={<h1>ErrorBoundary fallback</h1>}>
         <h1>errInJson</h1>
         <p>
           In the action's <code>try</code>, expected errors are returned as{" "}
           <code>json(new Error("..."))</code>.
         </p>
         <p>Unexpected errors are thrown from the catch.</p>
-        <Suspense fallback={<h1>Loading...</h1>}>
+        <Suspense fallback={<h1>Suspense fallback...</h1>}>
           <Show when={users()}>
-            <For each={addDummyUsers()}>
-              {(u: User) => <DisplayUser user={u} />}
-            </For>
+            <DisplayUsers users={users() as User[]} action={isAdmin} />
           </Show>
           <Show when={sub.pending}>
             <p>Pending</p>

@@ -1,4 +1,5 @@
 export function TypeOfError(props: { e: any }) {
+  log("TypeOfError: props:", props);
   const renderResult = (type: string, value: string) => (
     <div>
       <ul>
