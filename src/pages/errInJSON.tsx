@@ -17,7 +17,8 @@ import {
 import { TypeOfResult } from "../typeOfResult";
 import { TypeOfError } from "../typeOfError";
 import { getTime } from "../getTime";
-// import { isServer } from "solid-js/web";
+import { validateNumber } from "../utils/validateNumber";
+
 const log = console.log;
 
 type User = {
@@ -51,13 +52,15 @@ const getUsers = query((id?: number) => {
 
 const isAdmin = action(async (formData: FormData) => {
   try {
-    const id = formData.get("userid");
-    if (!id) {
-      return json(new Error("Missing param 'id'"));
+    const id = Number(formData.get("userid"));
+    // missing id
+    if (!validateNumber(id)) {
+      throw new Error("Missing param 'id'");
     }
-    const user = (await getUsers(Number(id))) as User;
-    if (!user) return json(new Error("User not found."));
-    if (!user?.admin) return json(new Error("User is not admin."));
+    const user = (await getUsers(Number(id))) as User[];
+    log("user", user);
+    if (user.length === 0) return json(new Error("User not found."));
+    if (!user[0]?.admin) return json(new Error("User is not admin."));
     return user;
   } catch (e) {
     log("e", e);
@@ -105,7 +108,7 @@ export default function Home() {
 
   createEffect(() => {
     if (users() && !sub.pending) {
-      console.group(getTime("throwAllErrors"))
+      console.group(getTime("throwAllErrors"));
       tblResult();
       tblError();
       console.groupEnd();
@@ -115,7 +118,7 @@ export default function Home() {
   return (
     <section>
       <ErrorBoundary fallback={<h1>ERROR</h1>}>
-        <h1>Error in Json, Throw Unexpected</h1>
+        <h1>errInJson</h1>
         <p>
           In the action's <code>try</code>, expected errors are returned as{" "}
           <code>json(new Error("..."))</code>.

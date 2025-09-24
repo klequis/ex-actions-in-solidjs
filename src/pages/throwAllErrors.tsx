@@ -7,16 +7,11 @@ import {
   Suspense,
   Switch,
 } from "solid-js";
-import {
-  action,
-  createAsync,
-  query,
-  useSubmission,
-} from "@solidjs/router";
-import { wait } from "../wait";
+import { action, createAsync, query, useSubmission } from "@solidjs/router";
 import { TypeOfResult } from "../typeOfResult";
 import { TypeOfError } from "../typeOfError";
 import { getTime } from "../getTime";
+import { validateNumber } from "../utils/validateNumber";
 
 const log = console.log;
 
@@ -27,18 +22,19 @@ type User = {
 };
 
 const users: User[] = [
-  { id: 0, name: "user1", admin: false },
-  { id: 1, name: "user2", admin: true },
+  { id: 0, name: "validUser", admin: true },
+  { id: 1, name: "notAdmin", admin: false },
+  { name: "noID", admin: false },
 ];
 
-function db(id?: number): Promise<User | User[] | Error> {
-  return new Promise((resolve, reject) => {
-    const user = id ? users[id] : users;
-    return setTimeout(() => {
-      if (user) {
-        resolve(user);
+function db(id?: number): Promise<User[]> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      if (id === undefined) {
+        resolve(users);
       } else {
-        reject(new Error("User not found"));
+        const user = users.find((u) => u.id === id);
+        resolve(user ? [user] : []); // return as array
       }
     }, 1000);
   });
@@ -51,15 +47,19 @@ const getUsers = query((id?: number) => {
 
 const isAdmin = action(async (formData: FormData) => {
   try {
-    const id = formData.get("userid");
-    if (!id) {
+    const id = Number(formData.get("userid"));
+    // missing id
+    if (!validateNumber(id)) {
       throw new Error("Missing param 'id'");
     }
-    const user = (await getUsers(Number(id))) as User;
-    if (!user) throw new Error("User not found.");
-    if (!user?.admin) throw new Error("User is not admin.");
+    const user = (await getUsers(Number(id))) as User[];
+    log("user", user);
+    if (user.length === 0) throw new Error(`Unknown ID: ${id}`);
+    if (id === 10) throw new Error("ERROR: throw user selected.");
+    if (!user[0]?.admin) throw new Error("User is not admin.");
     return user;
   } catch (e) {
+    log("e", e);
     const msg = e instanceof Error ? e.message : "unknown error";
     throw new Error(msg);
   }
@@ -94,14 +94,6 @@ export default function Home() {
     console.groupEnd();
   };
 
-  const addDummyUsers = () => {
-    const a = [
-      { name: "noID", admin: false },
-      { name: "unknownID", admin: true, id: 9 },
-    ];
-    return [...(users() ?? []), ...a];
-  };
-
   createEffect(() => {
     if (users() && !sub.pending) {
       console.group(getTime("throwAllErrors"));
@@ -113,14 +105,14 @@ export default function Home() {
 
   return (
     <section>
-      <ErrorBoundary fallback={<h1>ERROR</h1>}>
-        <h1>Throw All Errors</h1>
+      <ErrorBoundary fallback={<h1>ErrorBoundary fallback</h1>}>
+        <h1>throwAllErrors</h1>
         <p>All errors in the action are thrown.</p>
-        <Suspense fallback={<h1>Loading...</h1>}>
+        <Suspense fallback={<h1>Suspense fallback...</h1>}>
           <Show when={users()}>
-            <For each={addDummyUsers()}>
-              {(u: User) => <DisplayUser user={u} />}
-            </For>
+            <For each={users()}>{(u: User) => <DisplayUser user={u} />}</For>
+            <DisplayUser user={{ id: 9, name: "unknownID", admin: true }} />
+            <DisplayUser user={{ id: 10, name: "throwError", admin: true }} />
           </Show>
           <Show when={sub.pending}>
             <p>Pending</p>
