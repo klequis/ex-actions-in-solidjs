@@ -5,6 +5,7 @@ const App: Component<{ children: Element }> = (props) => {
   return (
     <>
       <main>
+        <h2>ex-actions-in-solidjs</h2>
         <Nav />
         <Suspense>{props.children}</Suspense>
       </main>

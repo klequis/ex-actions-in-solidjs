@@ -87,7 +87,7 @@ export default function Home() {
             <Switch>
               <Match when={sub.result}>
                 <h2>Result</h2>
-                <TypeOfResult r={sub.result} />
+                <TypeOfResult e={sub.result} />
               </Match>
               <Match when={sub.error}>
                 <h2>Error</h2>

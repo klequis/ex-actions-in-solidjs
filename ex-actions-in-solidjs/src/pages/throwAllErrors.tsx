@@ -33,21 +33,17 @@ const getUsers = query((id?: number) => {
 const isAdmin = action(async (formData: FormData) => {
   try {
     const id = Number(formData.get("userid"));
-    // missing id
     if (!validateNumber(id)) {
       throw new Error("Missing param 'id'");
     }
     const user = (await getUsers(Number(id))) as User[];
-    // log("user", user);
     // Yes, throw this
-    log('before 10: id:', id)
     if (id === 10) throw new Error("ERROR: throw user selected.");
-    log('after 10')
     if (user.length === 0) throw new Error(`Unknown ID: ${id}`);
     if (!user[0]?.admin) throw new Error("User is not admin.");
     return user;
   } catch (e) {
-    log("e", e);
+    // log("e", e);
     const msg = e instanceof Error ? e.message : "unknown error";
     throw new Error(msg);
   }

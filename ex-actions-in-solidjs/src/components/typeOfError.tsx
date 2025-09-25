@@ -1,10 +1,13 @@
+const log = console.log
 export function TypeOfError(props: { e: any }) {
   log("TypeOfError: props:", props);
+  log("TypeOfError: props.e:", props.e);
+  log("TypeOfError: props.e.message:", props.e.message);
   const renderResult = (type: string, value: string) => (
     <div>
       <ul>
         <li>
-          <code>sub.result</code> is a <code>{type}</code>
+          <code>sub.error</code> is a <code>{type}</code>
         </li>
         <li>
           <code>props.r</code> is <code>{value}</code>
